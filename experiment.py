@@ -11,13 +11,13 @@ from single_trial import *
 
 def run_experiment(self):
     config = pd.read_csv(
-                os.path.join(PATH_PARTICIPANT_DATA, 'input', 'config_{}.csv'.format(self.pid)),
+                os.path.join(PATH_INPUT, 'config_{}.csv'.format(self.pid)),
                 keep_default_na=False).to_dict(orient='records')
     block_params = pd.read_csv(
-                os.path.join(PATH_PARTICIPANT_DATA, 'input', 'block_parameters_{}.csv'.format(self.pid)),
+                os.path.join(PATH_INPUT, 'block_parameters_{}.csv'.format(self.pid)),
                 keep_default_na=False).to_dict(orient='records')
     experimental_params = pd.read_csv(
-                os.path.join(PATH_PARTICIPANT_DATA, 'input', 'experimental_parameters_{}.csv'.format(self.pid)),
+                os.path.join(PATH_INPUT, 'experimental_parameters_{}.csv'.format(self.pid)),
                 keep_default_na=False).to_dict(orient='records')
 
     iteration = block_number = block_start_time = inter_block_pause_duration = 0
@@ -83,12 +83,12 @@ def run_experiment(self):
     output_block_params_df = df.from_dict(block_params)
     output_experimental_params_df = df.from_dict(experimental_params)
 
-    output_config_df.to_csv(os.path.join(output_path, 'out_config_{}.csv'.format(self.pid)), index=False)
-    output_block_params_df.to_csv(os.path.join(output_path, 'out_block_parameters_{}.csv'.format(self.pid)), index=False)
-    output_experimental_params_df.to_csv(os.path.join(output_path, 'out_experimental_parameters_{}.csv'.format(self.pid)), index=False)
+    output_config_df.to_csv(os.path.join(PATH_OUTPUT, 'out_config_{}.csv'.format(self.pid)), index=False)
+    output_block_params_df.to_csv(os.path.join(PATH_OUTPUT, 'out_block_parameters_{}.csv'.format(self.pid)), index=False)
+    output_experimental_params_df.to_csv(os.path.join(PATH_OUTPUT, 'out_experimental_parameters_{}.csv'.format(self.pid)), index=False)
 
     print('Experiment completed:', block_end_time)
-    print('Results written to:', output_path)
+    print('Results written to:', PATH_OUTPUT)
 
     completion_message =  self.figure.text(0.5, 0.5,
                                 'Thank you for your time.\n\nThe experiment is now over.\n\nPress [SPACE BAR] to end this session.',

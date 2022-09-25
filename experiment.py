@@ -77,8 +77,7 @@ def run_experiment(self):
     block_end_time = dt.now().strftime('%Y-%m-%d %H:%M:%S.%f')
     block_params[block_number-1]['end_time'] = block_end_time
 
-    output_path = os.path.join(os.getcwd(), 'output')
-    os.makedirs(output_path, exist_ok=True)
+    os.makedirs(PATH_OUTPUT, exist_ok=True)
 
     output_config_df = df.from_dict(config)
     output_block_params_df = df.from_dict(block_params)

@@ -9,6 +9,7 @@ except ModuleNotFoundError:
 import os
 
 PATH_PARTICIPANT_DATA = os.path.join(os.getcwd(), 'participant_data')
+PATH_OUTPUT = os.path.join(os.getcwd(), 'output')
 
 # stimulus radius (dva)
 R0_SIZE = 1.00 

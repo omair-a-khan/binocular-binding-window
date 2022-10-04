@@ -1,4 +1,4 @@
-generate_parameters <- function(pid, n_blocks = 6, n_reps = 4, test = FALSE, grid_visible = FALSE, output.dir = file.path(getwd(), "participant_data")) {
+generate_parameters <- function(pid, n_blocks = 6, n_reps = 4, test = FALSE, grid_visible = FALSE, output.dir = file.path(getwd(), "participant_data", "input")) {
   require(tidyverse)
 
   set.seed(pid)

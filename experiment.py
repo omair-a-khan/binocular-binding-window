@@ -1,139 +1,173 @@
-try:
-    import pandas as pd
-except ModuleNotFoundError:
-    import sys, subprocess
-    print('')
-    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pandas'])
-    import pandas as pd
-    print('')
+import pandas as pd
 from pandas import DataFrame as df
+import datetime
+from datetime import datetime as dt
 from single_trial import *
 
-def run_experiment(self):
+def run_experiment(pid):
+  try:
+    print('Loading config_{}.csv...'.format(pid), end='\r')
     config = pd.read_csv(
-                os.path.join(PATH_INPUT, 'config_{}.csv'.format(self.pid)),
-                keep_default_na=False).to_dict(orient='records')
+        os.path.join(PATH_INPUT, 'config_{}.csv'.format(pid)),
+        keep_default_na=False).to_dict(orient='records')
+    print('Loading config_{}.csv...done'.format(pid))
+
+    print('Loading block_parameters_{}.csv...'.format(pid), end='\r')
     block_params = pd.read_csv(
-                os.path.join(PATH_INPUT, 'block_parameters_{}.csv'.format(self.pid)),
-                keep_default_na=False).to_dict(orient='records')
+        os.path.join(PATH_INPUT, 'block_parameters_{}.csv'.format(pid)),
+        keep_default_na=False).to_dict(orient='records')
+    print('Loading block_parameters_{}.csv...done'.format(pid))
+
+    print('Loading experimental_parameters_{}.csv...'.format(pid), end='\r')
     experimental_params = pd.read_csv(
-                os.path.join(PATH_INPUT, 'experimental_parameters_{}.csv'.format(self.pid)),
-                keep_default_na=False).to_dict(orient='records')
+        os.path.join(PATH_INPUT, 'experimental_parameters_{}.csv'.format(pid)),
+        keep_default_na=False).to_dict(orient='records')
+    print('Loading experimental_parameters_{}.csv...done\n'.format(pid))
+  except BaseException as error:
+    exit('\n{}\n{}\n{}\n{}'.format(error,
+                                  '#######################',
+                                  '### EXITING PROGRAM ###',
+                                  '#######################'))
 
-    iteration = block_number = block_start_time = inter_block_pause_duration = 0
-    last_block = block_params[-1]['block']
+  os.makedirs(PATH_OUTPUT, exist_ok=True)
+  config_out = os.path.join(PATH_OUTPUT, 'out_config_{}.csv'.format(pid))
+  block_out = os.path.join(PATH_OUTPUT, 'out_block_parameters_{}.csv'.format(pid))
+  exp_out = os.path.join(PATH_OUTPUT, 'out_experimental_parameters_{}.csv'.format(pid))
 
-    show_instructions(self)
-    countdown(self)
+  config_df = df.from_dict(config)
+  config_df.to_csv(config_out, mode='w+', index=False,
+                   header=not os.path.exists(config_out))
 
-    for exp_param in experimental_params:
-        pid = exp_param['pid']
-        block = exp_param['block']
-        first_stimulus_eye = exp_param['first_stimulus_eye']
-        first_stimulus_color = exp_param['first_stimulus_color']
-        second_stimulus_color = exp_param['second_stimulus_color']
-        first_stimulus_location = exp_param['first_stimulus_location']
-        second_stimulus_location = exp_param['second_stimulus_location']
-        central_fixation_cross_duration = exp_param['central_fixation_cross_duration']
-        pre_stimuli_pause_duration = exp_param['pre_stimuli_pause_duration']
-        temporal_disparity =  exp_param['temporal_disparity']
-        stimuli_duration =  exp_param['stimuli_duration']
-        post_stimuli_pause_duration =  exp_param['post_stimuli_pause_duration']
-        response_collection_duration =  exp_param['response_collection_duration']
-        intertrial_pause_duration =  exp_param['intertrial_pause_duration']
-        repetition =  exp_param['repetition']
+  iteration = block_number = block_start_time = inter_block_pause_duration = 0
+  last_block = block_params[-1]['block']
 
-        if block > block_number:
-            if not block_number == 0:
-                block_end_time = dt.now().strftime('%Y-%m-%d %H:%M:%S.%f')
-                block_params[block_number-1]['end_time'] = block_end_time
-                pause_plot(self.canvas, inter_block_pause_duration / 1000)
+  show_instructions()
+  show_pre_trial_countdown()
 
-            inter_block_pause_duration = block_params[block_number]['inter_block_pause_duration'] 
-            block_start_time = dt.now().strftime('%Y-%m-%d %H:%M:%S.%f')
-            block_params[block_number]['start_time'] = block_start_time
-            block_number = block
+  for exp_param in experimental_params:
+    iteration += 1
+    trial = Trial(exp_param, iteration)
 
-        # assign axes and color order
-        self.axes = [self.axes[0], self.axes[1]] if first_stimulus_eye == 'left' else [self.axes[1], self.axes[0]]
-        second_stimulus_color = 'red' if second_stimulus_color == 'NA' and first_stimulus_color == 'green' else 'green'
+    if trial.block > block_number:
+      if not block_number == 0:
+        block_end_time = dt.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+        block_params[block_number-1]['end_time'] = block_end_time
+        block_df = df.from_dict(block_params)
+        block_df.to_csv(block_out, mode='w+', index=False,
+                        header=not os.path.exists(block_out))
+        print('### BLOCK {} END: {}'.format(block_number, block_end_time))
+        show_inter_block_countdown(inter_block_pause_duration)
+        show_pre_trial_countdown()
 
-        response, response_time = run_trial(self, iteration+1,
-                                            first_stimulus_eye,
-                                            first_stimulus_color, second_stimulus_color,
-                                            first_stimulus_location, second_stimulus_location,
-                                            central_fixation_cross_duration,
-                                            pre_stimuli_pause_duration,
-                                            temporal_disparity,
-                                            stimuli_duration,
-                                            post_stimuli_pause_duration,
-                                            response_collection_duration,
-                                            intertrial_pause_duration)
-        exp_param['response'] = response
-        exp_param['response_time_ms'] = response_time
+      inter_block_pause_duration = block_params[block_number]['inter_block_pause_duration'] 
+      block_start_time = dt.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+      block_params[block_number]['start_time'] = block_start_time
+      block_df = df.from_dict(block_params)
+      block_df.to_csv(block_out, mode='w+', index=False,
+                      header=not os.path.exists(block_out))
+      block_number = trial.block
+      print('### BLOCK {} BEGIN: {}'.format(block_number, block_start_time))
+ 
+    response = run_trial(trial)
 
-        iteration += 1
+    if response:
+      exp_param['response'] = response[0].name
+      exp_param['response_time_ms'] = [response[0].rt * 1000]
+    else:
+      exp_param['response'] = 'NA'
+      exp_param['response_time_ms'] = ['NA']
 
-    block_end_time = dt.now().strftime('%Y-%m-%d %H:%M:%S.%f')
-    block_params[block_number-1]['end_time'] = block_end_time
+    exp_df = df.from_dict(exp_param)
+    exp_df.to_csv(exp_out, mode='a+', index=False,
+                  header=not os.path.exists(exp_out))
 
-    os.makedirs(PATH_OUTPUT, exist_ok=True)
+  block_end_time = dt.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+  block_params[block_number-1]['end_time'] = block_end_time
+  block_df = df.from_dict(block_params)
+  block_df.to_csv(block_out, mode='w+', index=False,
+                  header=not os.path.exists(block_out))
+  print('### BLOCK {} END: {}'.format(block_number, block_end_time))
 
-    output_config_df = df.from_dict(config)
-    output_block_params_df = df.from_dict(block_params)
-    output_experimental_params_df = df.from_dict(experimental_params)
+  print('Experiment completed:', block_end_time)
+  print('Results written to:', PATH_OUTPUT)
 
-    output_config_df.to_csv(os.path.join(PATH_OUTPUT, 'out_config_{}.csv'.format(self.pid)), index=False)
-    output_block_params_df.to_csv(os.path.join(PATH_OUTPUT, 'out_block_parameters_{}.csv'.format(self.pid)), index=False)
-    output_experimental_params_df.to_csv(os.path.join(PATH_OUTPUT, 'out_experimental_parameters_{}.csv'.format(self.pid)), index=False)
+  show_completion_message()
 
-    print('Experiment completed:', block_end_time)
-    print('Results written to:', PATH_OUTPUT)
+def show_instructions():
+  print('### EXPERIMENT BEGIN: {}'.format(dt.now().strftime('%Y-%m-%d %H:%M:%S.%f')))
+  print('AWAITING RESPONSE', end='\r')
+  instructions = visual.TextBox2(WINDOW, text=INSTRUCTIONS,
+                                 alignment='center', color='black', bold=True,
+                                 letterHeight=28, size=[99999, None])
+  instructions.draw()
+  WINDOW.flip()
 
-    completion_message =  self.figure.text(0.5, 0.5,
-                                'Thank you for your time.\n\nThe experiment is now over.\n\nPress [SPACE BAR] to end this session.',
-                                fontsize=12, family='monospace',
-                                horizontalalignment='center',
-                                verticalalignment='center',
-                                transform=self.figure.transFigure)
-    self.canvas.draw()
-    self.canvas.start_event_loop()
+  KEYBOARD.clearEvents()
+  response = KEYBOARD.waitKeys(keyList=['space'], waitRelease=False)
+  print('Response: {} {}'.format(response[0].name, dt.now().strftime('%Y-%m-%d %H:%M:%S.%f')))
+  WINDOW.flip()
+  core.wait(0.5)
 
-    completion_message.set_visible(False)
-    self.canvas.draw()
+def show_pre_trial_countdown():
+  countdown_stim_L = visual.TextStim(WINDOW)
+  countdown_stim_R = visual.TextStim(WINDOW)
+  countdown_stim_L.bold = countdown_stim_R.bold = True
+  countdown_stim_L.colorSpace = countdown_stim_R.colorSpace = 'rgb'
+  countdown_stim_L.color = countdown_stim_R.color = 'black'
+  countdown_stim_L.units = countdown_stim_R.units = 'deg'
+  countdown_stim_L.size = countdown_stim_R.size = R2_SIZE
+  countdown_stim_L.pos = [STIMULI['left'][0]['x'], STIMULI['left'][0]['y']]
+  countdown_stim_R.pos = [STIMULI['right'][0]['x'], STIMULI['right'][0]['y']]
+  
+  for i in range(3, 0, -1):
+    print('COUNTDOWN:', datetime.timedelta(0, i), end='\r')
+    countdown_stim_L.text = countdown_stim_R.text = '{}...'.format(i)
+    countdown_stim_L.draw()
+    countdown_stim_R.draw()
+    WINDOW.flip()
+    core.wait(1)
+  print('      BEGIN       ', end='\r')
 
-def show_instructions(self):
-    instructions_text = self.figure.text(0.5, 0.5, INSTRUCTIONS,
-                                        fontsize=12,
-                                        horizontalalignment='center',
-                                        verticalalignment='center',
-                                        transform=self.figure.transFigure)
-    self.canvas.draw()
-    self.canvas.start_event_loop()
+  countdown_stim_L.text = countdown_stim_R.text = 'BEGIN'
+  countdown_stim_L.draw()
+  countdown_stim_R.draw()
+  WINDOW.flip()
+  core.wait(1)
 
-    instructions_text.set_visible(False)
-    self.canvas.draw()
-    self.canvas.start_event_loop(1)
+  WINDOW.flip()
+  core.wait(1)
 
-def countdown(self):
-    canvas = self.canvas
-    axes = self.axes
-    for i in range(3, 0, -1):
-        countdown_string = r'$\bf{' + str(i) + '...}$'
-        ax_left_text = axes[0].text(0.5, 0.5, countdown_string, fontsize=40, horizontalalignment='center', verticalalignment='center', transform=axes[0].transAxes)
-        ax_right_text = axes[1].text(0.5, 0.5, countdown_string, fontsize=40, horizontalalignment='center', verticalalignment='center', transform=axes[1].transAxes)
-        self.canvas.draw()
-        self.canvas.start_event_loop(1)
-        
-        ax_left_text.set_visible(False)
-        ax_right_text.set_visible(False)
+def show_inter_block_countdown(secs):
+  print('### INTER-BLOCK PAUSE: {} ms'.format(secs))
+  pause_message = visual.TextBox2(WINDOW, text='',
+                                  alignment='center', color='black', bold=True,
+                                  letterHeight=32, size=[99999, None])
+  KEYBOARD.clearEvents()
 
-    ax_left_text = axes[0].text(0.5, 0.5, r'$\bf{BEGIN}$', fontsize=40, horizontalalignment='center', verticalalignment='center', transform=axes[0].transAxes)
-    ax_right_text = axes[1].text(0.5, 0.5, r'$\bf{BEGIN}$', fontsize=40, horizontalalignment='center', verticalalignment='center', transform=axes[1].transAxes)
-    canvas.draw()
-    canvas.start_event_loop(1)
-    
-    ax_left_text.set_visible(False)
-    ax_right_text.set_visible(False)
-    canvas.draw()
-    canvas.start_event_loop(1)
+  for i in range(round(secs/1000), -1, -1):
+    response = KEYBOARD.getKeys(keyList=['space'], waitRelease=False)
+    if response: break
+
+    time_left = datetime.timedelta(0, i)
+    print('COUNTDOWN: {}'.format(time_left), end='\r')
+    pause_message.text = 'You may now take a short break.\n\nREMAINING TIME: {}\n\nPress [SPACE BAR] to continue now.'.format(time_left)
+    pause_message.draw()
+    WINDOW.flip()
+    core.wait(secs=1, hogCPUperiod=1)
+  print()
+
+  WINDOW.flip()
+  core.wait(1)
+
+def show_completion_message():
+  message = 'Thank you for your time.\n\nThe experiment is now over.\n\nPress [SPACE BAR] to end this session.'
+  completion_message = visual.TextBox2(WINDOW, text=message,
+                                 alignment='center', color='black', bold=True,
+                                 letterHeight=32, size=[99999, None])
+  completion_message.draw()
+  WINDOW.flip()
+
+  KEYBOARD.clearEvents()
+  KEYBOARD.waitKeys(keyList=['space'], waitRelease=False)
+  WINDOW.flip()
+  core.wait(0.5)

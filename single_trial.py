@@ -1,7 +1,7 @@
 from master_config import *
 
 class Trial:
-  def __init__(self, exp_param, iteration):
+  def __init__(self, stims, exp_param, iteration):
     self.pid = exp_param['pid']
     self.block = exp_param['block']
     self.first_eye = exp_param['first_stimulus_eye']
@@ -22,9 +22,9 @@ class Trial:
     self.repetition =  exp_param['repetition']
     self.iteration = iteration
 
-    self.__generate_stimuli()
+    self.__generate_stimuli(stims)
 
-  def __generate_stimuli(self):
+  def __generate_stimuli(self, stims):
     self.cross_stim_L = visual.TextStim(WINDOW)
     self.cross_stim_R = visual.TextStim(WINDOW)
     self.cross_stim_L.text = self.cross_stim_R.text = '+'
@@ -32,22 +32,22 @@ class Trial:
     self.cross_stim_L.color = self.cross_stim_R.color = 'black'
     self.cross_stim_L.units = self.cross_stim_R.units = 'deg'
     self.cross_stim_L.size = self.cross_stim_R.size = R2_SIZE
-    self.cross_stim_L.pos = [STIMULI['left'][0]['x'], STIMULI['left'][0]['y']]
-    self.cross_stim_R.pos = [STIMULI['right'][0]['x'], STIMULI['right'][0]['y']]
+    self.cross_stim_L.pos = [stims['left'][0]['x'], stims['left'][0]['y']]
+    self.cross_stim_R.pos = [stims['right'][0]['x'], stims['right'][0]['y']]
 
     self.dot_stim_first = visual.DotStim(WINDOW)
     self.dot_stim_first.units = 'deg'
-    self.dot_stim_first.dotSize = monitorunittools.deg2pix(STIMULI[self.first_eye][self.first_location]['size'], MONITOR)
+    self.dot_stim_first.dotSize = monitorunittools.deg2pix(stims[self.first_eye][self.first_location]['size'], MONITOR)
     self.dot_stim_first.colorSpace = 'rgb'
     self.dot_stim_first.color = self.first_color
-    self.dot_stim_first.pos = [STIMULI[self.first_eye][self.first_location]['x'],STIMULI[self.first_eye][self.first_location]['y']]
+    self.dot_stim_first.pos = [stims[self.first_eye][self.first_location]['x'],stims[self.first_eye][self.first_location]['y']]
 
     self.dot_stim_second = visual.DotStim(WINDOW)
     self.dot_stim_second.units = 'deg'
-    self.dot_stim_second.dotSize = monitorunittools.deg2pix(STIMULI['right'][self.second_location]['size'], MONITOR)
+    self.dot_stim_second.dotSize = monitorunittools.deg2pix(stims['right'][self.second_location]['size'], MONITOR)
     self.dot_stim_second.colorSpace = 'rgb'
     self.dot_stim_second.color = self.second_color
-    self.dot_stim_second.pos = [STIMULI[self.second_eye][self.second_location]['x'], STIMULI[self.second_eye][self.second_location]['y']]
+    self.dot_stim_second.pos = [stims[self.second_eye][self.second_location]['x'], stims[self.second_eye][self.second_location]['y']]
 
     self.question_stim_L = visual.TextStim(WINDOW)
     self.question_stim_R = visual.TextStim(WINDOW)
@@ -57,8 +57,8 @@ class Trial:
     self.question_stim_L.color = self.question_stim_R.color = 'black'
     self.question_stim_L.units = self.question_stim_R.units = 'deg'
     self.question_stim_L.size = self.question_stim_R.size = R2_SIZE
-    self.question_stim_L.pos = [STIMULI['left'][0]['x'], STIMULI['left'][0]['y']]
-    self.question_stim_R.pos = [STIMULI['right'][0]['x'], STIMULI['right'][0]['y']]
+    self.question_stim_L.pos = [stims['left'][0]['x'], stims['left'][0]['y']]
+    self.question_stim_R.pos = [stims['right'][0]['x'], stims['right'][0]['y']]
 
 def run_trial(trial):
   trial.cross_stim_L.draw()

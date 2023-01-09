@@ -40,14 +40,11 @@ WINDOW = visual.Window(monitor=MONITOR,
                        size=MONITOR.getSizePix(),
                        units="pix",
                        pos=(0,0),
-                       color=(255, 255, 255),
+                       color=255,
                        colorSpace='rgb255',
                        fullscr=True)
 
 KEYBOARD = keyboard.Keyboard()
-
-ORIGIN_RIGHT = monitorunittools.pix2deg(WINDOW.clientSize[0]/4, MONITOR)
-ORIGIN_LEFT = -ORIGIN_RIGHT
 
 # formulae
 DISPLAY_DIAG_PX = np.sqrt(DISPLAY_SIZE_X_PX**2 + DISPLAY_SIZE_Y_PX**2)
@@ -55,162 +52,169 @@ DISPLAY_DIAG_CM = np.sqrt(DISPLAY_SIZE_X_CM**2 + DISPLAY_SIZE_Y_CM**2)
 DVA_PER_CM = 2 * np.arctan(1 / (2 * DISTANCE_TO_DISPLAY_CM)) * 180 / np.pi
 PX_PER_DVA = (DISPLAY_DIAG_PX / DISPLAY_DIAG_CM) / DVA_PER_CM
 
-STIMULI = {
+def init_stimuli(origin_left, origin_right):
+  stimuli = {
     'left': {
       0:  { # central fixation point (cfp)
-        'x': ORIGIN_LEFT + R0_ECCENTRICITY,
-        'y': R0_ECCENTRICITY,
+        'x': origin_left[0] + R0_ECCENTRICITY,
+        'y': origin_left[1] + R0_ECCENTRICITY,
         'size': R0_SIZE
       },
       1:  { # N, R1_ECCENTRICITY dva from cfp
-          'x': ORIGIN_LEFT + R0_ECCENTRICITY,
-          'y': R1_ECCENTRICITY,
+          'x': origin_left[0] + R0_ECCENTRICITY,
+          'y': origin_left[1] + R1_ECCENTRICITY,
           'size': R1_SIZE
       },
       2:  { # E, R1_ECCENTRICITY dva from cfp
-          'x': ORIGIN_LEFT + R1_ECCENTRICITY,
-          'y': R0_ECCENTRICITY,
+          'x': origin_left[0] + R1_ECCENTRICITY,
+          'y': origin_left[1] + R0_ECCENTRICITY,
           'size': R1_SIZE
       },
       3:  { # S, R1_ECCENTRICITY dva from cfp
-          'x': ORIGIN_LEFT + R0_ECCENTRICITY,
-          'y': -R1_ECCENTRICITY,
+          'x': origin_left[0] + R0_ECCENTRICITY,
+          'y': origin_left[1] - R1_ECCENTRICITY,
           'size': R1_SIZE
       },
       4:  { # W, R1_ECCENTRICITY dva from cfp
-          'x': ORIGIN_LEFT - R1_ECCENTRICITY,
-          'y': R0_ECCENTRICITY,
+          'x': origin_left[0] - R1_ECCENTRICITY,
+          'y': origin_left[1] + R0_ECCENTRICITY,
           'size': R1_SIZE
       },
       5:  { # N, R2_ECCENTRICITY dva from cfp
-          'x': ORIGIN_LEFT + R0_ECCENTRICITY,
-          'y': R2_ECCENTRICITY,
+          'x': origin_left[0] + R0_ECCENTRICITY,
+          'y': origin_left[1] + R2_ECCENTRICITY,
           'size': R2_SIZE
       },
       6:  { # NE, R2_ECCENTRICITY dva from cfp
-          'x': ORIGIN_LEFT + (R2_ECCENTRICITY * np.sin(np.radians(45))),
-          'y': R2_ECCENTRICITY * np.cos(np.radians(45)),
+          'x': origin_left[0] + (R2_ECCENTRICITY * np.sin(np.radians(45))),
+          'y': origin_left[1] + (R2_ECCENTRICITY * np.cos(np.radians(45))),
           'size': R2_SIZE
       },
       7:  { # E, R2_ECCENTRICITY dva from cfp
-          'x': ORIGIN_LEFT + R2_ECCENTRICITY,
-          'y': R0_ECCENTRICITY,
+          'x': origin_left[0] + R2_ECCENTRICITY,
+          'y': origin_left[1] + R0_ECCENTRICITY,
           'size': R2_SIZE
       },
       8:  { # SE, R2_ECCENTRICITY dva from cfp
-          'x': ORIGIN_LEFT + (R2_ECCENTRICITY * np.sin(np.radians(135))),
-          'y': R2_ECCENTRICITY * np.cos(np.radians(135)),
+          'x': origin_left[0] + (R2_ECCENTRICITY * np.sin(np.radians(135))),
+          'y': origin_left[1] + (R2_ECCENTRICITY * np.cos(np.radians(135))),
           'size': R2_SIZE
       },
       9:  { # S, R2_ECCENTRICITY dva from center
-          'x': ORIGIN_LEFT + R0_ECCENTRICITY,
-          'y': -R2_ECCENTRICITY,
+          'x': origin_left[0] + R0_ECCENTRICITY,
+          'y': origin_left[1] - R2_ECCENTRICITY,
           'size': R2_SIZE
       },
       10: { # SW, R2_ECCENTRICITY dva from cfp
-          'x': ORIGIN_LEFT + (R2_ECCENTRICITY * np.sin(np.radians(225))),
-          'y': R2_ECCENTRICITY * np.cos(np.radians(224)),
+          'x': origin_left[0] + (R2_ECCENTRICITY * np.sin(np.radians(225))),
+          'y': origin_left[1] + (R2_ECCENTRICITY * np.cos(np.radians(224))),
           'size': R2_SIZE
       },
       11: { # W, R2_ECCENTRICITY dva from cfp
-          'x': ORIGIN_LEFT - R2_ECCENTRICITY,
-          'y': R0_ECCENTRICITY,
+          'x': origin_left[0] - R2_ECCENTRICITY,
+          'y': origin_left[1] + R0_ECCENTRICITY,
           'size': R2_SIZE
       },
       12: { # NW, R2_ECCENTRICITY dva from cfp
-          'x': ORIGIN_LEFT + (R2_ECCENTRICITY * np.sin(np.radians(315))),
-          'y': R2_ECCENTRICITY * np.cos(np.radians(315)),
+          'x': origin_left[0] + (R2_ECCENTRICITY * np.sin(np.radians(315))),
+          'y': origin_left[1] + (R2_ECCENTRICITY * np.cos(np.radians(315))),
           'size': R2_SIZE
       },
       13: { # E, R3_ECCENTRICITY dva from cfp
-          'x': ORIGIN_LEFT + R3_ECCENTRICITY,
-          'y': R0_ECCENTRICITY,
+          'x': origin_left[0] + R3_ECCENTRICITY,
+          'y': origin_left[1] + R0_ECCENTRICITY,
           'size': R3_SIZE
       },
       14: { # W, R3_ECCENTRICITY dva from cfp
-          'x': ORIGIN_LEFT - R3_ECCENTRICITY,
-          'y': R0_ECCENTRICITY,
+          'x': origin_left[0] - R3_ECCENTRICITY,
+          'y': origin_left[1] + R0_ECCENTRICITY,
           'size': R3_SIZE
       }
     },
     'right': {
       0:  { # central fixation point (cfp)
-        'x': ORIGIN_RIGHT + R0_ECCENTRICITY,
-        'y': R0_ECCENTRICITY,
+        'x': origin_right[0] + R0_ECCENTRICITY,
+        'y': origin_right[1] + R0_ECCENTRICITY,
         'size': R0_SIZE
       },
       1:  { # N, R1_ECCENTRICITY dva from cfp
-          'x': ORIGIN_RIGHT + R0_ECCENTRICITY,
-          'y': R1_ECCENTRICITY,
+          'x': origin_right[0] + R0_ECCENTRICITY,
+          'y': origin_right[1] + R1_ECCENTRICITY,
           'size': R1_SIZE
       },
       2:  { # E, R1_ECCENTRICITY dva from cfp
-          'x': ORIGIN_RIGHT + R1_ECCENTRICITY,
-          'y': R0_ECCENTRICITY,
+          'x': origin_right[0] + R1_ECCENTRICITY,
+          'y': origin_right[1] + R0_ECCENTRICITY,
           'size': R1_SIZE
       },
       3:  { # S, R1_ECCENTRICITY dva from cfp
-          'x': ORIGIN_RIGHT + R0_ECCENTRICITY,
-          'y': -R1_ECCENTRICITY,
+          'x': origin_right[0] + R0_ECCENTRICITY,
+          'y': origin_right[1] - R1_ECCENTRICITY,
           'size': R1_SIZE
       },
       4:  { # W, R1_ECCENTRICITY dva from cfp
-          'x': ORIGIN_RIGHT - R1_ECCENTRICITY,
-          'y': R0_ECCENTRICITY,
+          'x': origin_right[0] - R1_ECCENTRICITY,
+          'y': origin_right[1] + R0_ECCENTRICITY,
           'size': R1_SIZE
       },
       5:  { # N, R2_ECCENTRICITY dva from cfp
-          'x': ORIGIN_RIGHT + R0_ECCENTRICITY,
-          'y': R2_ECCENTRICITY,
+          'x': origin_right[0] + R0_ECCENTRICITY,
+          'y': origin_right[1] + R2_ECCENTRICITY,
           'size': R2_SIZE
       },
       6:  { # NE, R2_ECCENTRICITY dva from cfp
-          'x': ORIGIN_RIGHT + (R2_ECCENTRICITY * np.sin(np.radians(45))),
-          'y': R2_ECCENTRICITY * np.cos(np.radians(45)),
+          'x': origin_right[0] + (R2_ECCENTRICITY * np.sin(np.radians(45))),
+          'y': origin_right[1] + (R2_ECCENTRICITY * np.cos(np.radians(45))),
           'size': R2_SIZE
       },
       7:  { # E, R2_ECCENTRICITY dva from cfp
-          'x': ORIGIN_RIGHT + R2_ECCENTRICITY,
-          'y': R0_ECCENTRICITY,
+          'x': origin_right[0] + R2_ECCENTRICITY,
+          'y': origin_right[1] + R0_ECCENTRICITY,
           'size': R2_SIZE
       },
       8:  { # SE, R2_ECCENTRICITY dva from cfp
-          'x': ORIGIN_RIGHT + (R2_ECCENTRICITY * np.sin(np.radians(135))),
-          'y': R2_ECCENTRICITY * np.cos(np.radians(135)),
+          'x': origin_right[0] + (R2_ECCENTRICITY * np.sin(np.radians(135))),
+          'y': origin_right[1] + (R2_ECCENTRICITY * np.cos(np.radians(135))),
           'size': R2_SIZE
       },
       9:  { # S, R2_ECCENTRICITY dva from center
-          'x': ORIGIN_RIGHT + R0_ECCENTRICITY,
-          'y': -R2_ECCENTRICITY,
+          'x': origin_right[0] + R0_ECCENTRICITY,
+          'y': origin_right[1] - R2_ECCENTRICITY,
           'size': R2_SIZE
       },
       10: { # SW, R2_ECCENTRICITY dva from cfp
-          'x': ORIGIN_RIGHT + (R2_ECCENTRICITY * np.sin(np.radians(225))),
-          'y': R2_ECCENTRICITY * np.cos(np.radians(224)),
+          'x': origin_right[0] + (R2_ECCENTRICITY * np.sin(np.radians(225))),
+          'y': origin_right[1] + (R2_ECCENTRICITY * np.cos(np.radians(224))),
           'size': R2_SIZE
       },
       11: { # W, R2_ECCENTRICITY dva from cfp
-          'x': ORIGIN_RIGHT - R2_ECCENTRICITY,
-          'y': R0_ECCENTRICITY,
+          'x': origin_right[0] - R2_ECCENTRICITY,
+          'y': origin_right[1] + R0_ECCENTRICITY,
           'size': R2_SIZE
       },
       12: { # NW, R2_ECCENTRICITY dva from cfp
-          'x': ORIGIN_RIGHT + (R2_ECCENTRICITY * np.sin(np.radians(315))),
-          'y': R2_ECCENTRICITY * np.cos(np.radians(315)),
+          'x': origin_right[0] + (R2_ECCENTRICITY * np.sin(np.radians(315))),
+          'y': origin_right[1] + (R2_ECCENTRICITY * np.cos(np.radians(315))),
           'size': R2_SIZE
       },
       13: { # E, R3_ECCENTRICITY dva from cfp
-          'x': ORIGIN_RIGHT + R3_ECCENTRICITY,
-          'y': R0_ECCENTRICITY,
+          'x': origin_right[0] + R3_ECCENTRICITY,
+          'y': origin_right[1] + R0_ECCENTRICITY,
           'size': R3_SIZE
       },
       14: { # W, R3_ECCENTRICITY dva from cfp
-          'x': ORIGIN_RIGHT - R3_ECCENTRICITY,
-          'y': R0_ECCENTRICITY,
+          'x': origin_right[0] - R3_ECCENTRICITY,
+          'y': origin_right[1] + R0_ECCENTRICITY,
           'size': R3_SIZE
       }
     }
-}
+  }
+
+  return stimuli
+
+ORIGIN_RIGHT = (monitorunittools.pix2deg(WINDOW.clientSize[0]/4, MONITOR), 0)
+ORIGIN_LEFT = (-ORIGIN_RIGHT[0], 0)
+STIMULI = init_stimuli(ORIGIN_LEFT, ORIGIN_RIGHT)
 
 INSTRUCTIONS = 'This experiment will take about 45 minutes of your time.\n' +\
                                             '\n' +\

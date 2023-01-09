@@ -22,12 +22,27 @@ def run_experiment(pid):
     experimental_params = pd.read_csv(
         os.path.join(PATH_INPUT, 'experimental_parameters_{}.csv'.format(pid)),
         keep_default_na=False).to_dict(orient='records')
-    print('Loading experimental_parameters_{}.csv...done\n'.format(pid))
+    print('Loading experimental_parameters_{}.csv...done'.format(pid))
   except BaseException as error:
     exit('\n{}\n{}\n{}\n{}'.format(error,
                                   '#######################',
                                   '### EXITING PROGRAM ###',
                                   '#######################'))
+  stims = STIMULI
+  try:
+    print('Loading calibration_parameters_{}.csv...'.format(pid), end='\r')
+    calibration_params = pd.read_csv(
+        os.path.join(PATH_INPUT, 'calibration_parameters_{}.csv'.format(pid)),
+        keep_default_na=False).to_dict(orient='records')[0]
+    print('Loading calibration_parameters_{}.csv...done\n'.format(pid))
+
+    origin_left =  (monitorunittools.pix2deg(calibration_params['x_offset_LE_final'], MONITOR),
+                    monitorunittools.pix2deg(calibration_params['y_offset_LE_final'], MONITOR))
+    origin_right = (monitorunittools.pix2deg(calibration_params['x_offset_RE_final'], MONITOR),
+                    monitorunittools.pix2deg(calibration_params['y_offset_RE_final'], MONITOR))
+    stims = init_stimuli(origin_left, origin_right)
+  except BaseException as error:
+    print('calibration_parameters_{}.csv not found! Using default values.\n'.format(pid))
 
   os.makedirs(PATH_OUTPUT, exist_ok=True)
   config_out = os.path.join(PATH_OUTPUT, 'out_config_{}.csv'.format(pid))
@@ -42,11 +57,13 @@ def run_experiment(pid):
   last_block = block_params[-1]['block']
 
   show_instructions()
-  show_pre_trial_countdown()
+  show_pre_trial_countdown(stims)
+
+  print(origin_left)
 
   for exp_param in experimental_params:
     iteration += 1
-    trial = Trial(exp_param, iteration)
+    trial = Trial(stims, exp_param, iteration)
 
     if trial.block > block_number:
       if not block_number == 0:
@@ -57,7 +74,7 @@ def run_experiment(pid):
                         header=not os.path.exists(block_out))
         print('### BLOCK {} END: {}'.format(block_number, block_end_time))
         show_inter_block_countdown(inter_block_pause_duration)
-        show_pre_trial_countdown()
+        show_pre_trial_countdown(stims)
 
       inter_block_pause_duration = block_params[block_number]['inter_block_pause_duration'] 
       block_start_time = dt.now().strftime('%Y-%m-%d %H:%M:%S.%f')
@@ -108,7 +125,7 @@ def show_instructions():
   WINDOW.flip()
   core.wait(0.5)
 
-def show_pre_trial_countdown():
+def show_pre_trial_countdown(stims):
   countdown_stim_L = visual.TextStim(WINDOW)
   countdown_stim_R = visual.TextStim(WINDOW)
   countdown_stim_L.bold = countdown_stim_R.bold = True
@@ -116,8 +133,8 @@ def show_pre_trial_countdown():
   countdown_stim_L.color = countdown_stim_R.color = 'black'
   countdown_stim_L.units = countdown_stim_R.units = 'deg'
   countdown_stim_L.size = countdown_stim_R.size = R2_SIZE
-  countdown_stim_L.pos = [STIMULI['left'][0]['x'], STIMULI['left'][0]['y']]
-  countdown_stim_R.pos = [STIMULI['right'][0]['x'], STIMULI['right'][0]['y']]
+  countdown_stim_L.pos = [stims['left'][0]['x'], stims['left'][0]['y']]
+  countdown_stim_R.pos = [stims['right'][0]['x'], stims['right'][0]['y']]
   
   for i in range(3, 0, -1):
     print('COUNTDOWN:', datetime.timedelta(0, i), end='\r')
